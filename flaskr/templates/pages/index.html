@@ -73,7 +73,9 @@ Lichtregen
         loading-image-file-name="{{ url_for('static', filename='img/loading.png') }}"
         run-code-of-conversation-endpoint="{{url_for('conversation_run', conversation_id='conversation-id-placeholder')}}"></script>
 <script src="{{url_for('static', filename='js/submitButtonHandling.es6')}}"></script>
+{% if chat %}
 <script src="{{url_for('static', filename='js/chatScrollHandling.es6')}}"></script>
+{% endif %}
 {% endblock %}
 <a href="https://www.flaticon.com/free-icons/led-strip" title="led-strip icons">Led-strip icons created by smalllikeart
     - Flaticon</a>

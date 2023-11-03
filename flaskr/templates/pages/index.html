@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block header %}
+Lichtregen
+{% endblock %}
+
+{% block content %}
+<div class="clearfix">
+    <div class="col col-9 chat-container">
+        <section class="flex flex-column chat-panels-container px3">
+            {% if chat %}
+            <h2>{{chat.name}}</h2>
+            {% for conversation in conversations %}
+            <div class="col mr-auto my2 px2 border panel chat-panel you" data-conversation-id="{{conversation.id}}">
+                <div class="chat-text">{{conversation.description}}</div>
+                <div class="bold caps author">Du</div>
+            </div>
+            <div class="col ml-auto my2 border panel chat-panel chatbot" data-conversation-id="{{conversation.id}}">
+                <div class="chat-text">{{conversation.answer}}</div>
+                <div class="bold caps author">Chatbot</div>
+            </div>
+            {% endfor %}
+            <button class="btn scroll-to scroll-to-first" onclick="scrollToFirstMessage()">↑<br>Erste Nachricht</button>
+            <button class="btn scroll-to scroll-to-last" onclick="scrollToLastMessage()">↓<br>Neuste Nachricht</button>
+            {% else %}
+            <h2>Erstelle deinen Lichteffekt</h2>
+            {% endif %}
+        </section>
+    </div>
+    <aside class="col col-3 history-container border-left">
+        <div class="px2 overflow-auto history-list-container">
+            <div>
+                <ul class="list-reset menu">
+                    <li><a href="/?new_chat" class="btn alert my1">Starte neuen Lichteffekt-Chat</a></li>
+                </ul>
+            </div>
+            <div>
+                <h2>Historie</h2>
+                <ul class="list-reset menu">
+                    {% for theChat in chats %}
+                    <li><a href="/{{ theChat.id }}" class="btn my1">{{theChat.name}}{% if theChat.id == chat.id %}
+                        (aktuell){% endif %}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </aside>
+    <section class="col col-9 p2 edit-description-container">
+        {% if chat %}
+        <form action="{{url_for('conversation', chat_id=chat.id)}}" method="post" name="edit-description"
+              class="flex border rounded he">
+            {% else %}
+            <form action="{{url_for('new_chat')}}" method="post" name="edit-description" class="flex border rounded he">
+                {% endif %}
+                <textarea class="col col-12 border-none p2" id="description-input" name="description" required autofocus
+                          placeholder="Beschreibe den Lichteffekt für die Lichterkette. Beispiel:"></textarea>
+                <button type="submit" class="col edit btn success border-none self-center flex flex-column p2"
+                        name="edit-description"
+                        value="Senden" disabled id="edit-description-btn">
+                    <span>Senden</span>
+                    <img src="{{ url_for('static', filename='img/led-strip.png') }}" alt="Senden" width="42px"
+                         class="enabled">
+                    <img src="{{ url_for('static', filename='img/led-strip_bw.png') }}" alt="Senden" width="42px"
+                         class="disabled">
+                </button>
+            </form>
+    </section>
+</div>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/magula.min.css') }}">
+<script src="{{ url_for('static', filename='js/highlight.min.js') }}"></script>
+<script src="{{url_for('static', filename='js/messageCodeHighlighting.es6')}}"
+        execute-image-file-name="{{ url_for('static', filename='img/led-strip.png') }}"
+        loading-image-file-name="{{ url_for('static', filename='img/loading.png') }}"
+        run-code-of-conversation-endpoint="{{url_for('conversation_run', conversation_id='conversation-id-placeholder')}}"></script>
+<script src="{{url_for('static', filename='js/submitButtonHandling.es6')}}"></script>
+<script src="{{url_for('static', filename='js/chatScrollHandling.es6')}}"></script>
+{% endblock %}
+<a href="https://www.flaticon.com/free-icons/led-strip" title="led-strip icons">Led-strip icons created by smalllikeart
+    - Flaticon</a>
+<a href="https://www.flaticon.com/free-icons/loading" title="loading icons">Loading icons created by Freepik -
+    Flaticon</a>

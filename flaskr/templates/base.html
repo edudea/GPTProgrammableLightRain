@@ -1,0 +1,16 @@
+<!doctype html>
+<head>
+    <title>Lichtregen - edudea e.V.</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="flex flex-wrap layout">
+    <header class="col col-12 flex items-center justify-center bar">
+        <img class="logo" height="96%" src="{{ url_for('static', filename='img/logo.webp') }}" alt="edudea e.V. Logo">
+        <h1 class="my0 ml2">{% block header %}{% endblock %}</h1>
+    </header>
+    <section role="main" class="col col-12">
+        {% block content %}{% endblock %}
+    </section>
+</div>
+</body>

@@ -1,0 +1,271 @@
+@import "basscss.min.css";
+
+@font-face {
+    font-family: 'Quicksand';
+    src: url('../fonts/Quicksand-VariableFont_wght.ttf');
+}
+
+body {
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    background-color: #fff;
+    color: #111;
+    line-height: 1.5em;
+    font-family: Quicksand, sans-serif;
+}
+
+.layout {
+    height: 100%;
+    width: 100%;
+}
+
+section[role=main] {
+    min-height: 90%;
+}
+
+header.bar {
+    height: 6vh;
+    background-color: #2d435b;
+    color: white;
+}
+
+.edit-description-container {
+    height: 20vh;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+}
+
+form[name=edit-description] {
+    height: 100%;
+    width: 100%;
+}
+
+form[name=edit-description] textarea {
+    resize: none;
+    outline: none;
+    font-size: 1.5em;
+}
+
+#edit-description-btn {
+    height: 100%;
+    border: none;
+    border-radius: 0;
+    transition: background-color 750ms;
+}
+
+#edit-description-btn:hover, #edit-description-btn:focus {
+    transform: none;
+}
+
+#edit-description-btn:disabled {
+    background-color: white;
+    color: grey;
+}
+
+#edit-description-btn:enabled img.disabled {
+    display: none;
+}
+
+#edit-description-btn:disabled img.enabled {
+    display: none;
+}
+
+.chat-container {
+    background-color: #39A3D1;
+    min-height: 100vh;
+}
+
+.he {
+    transition: all 250ms;
+}
+
+.he:hover, .he:focus-within {
+    box-shadow: 0 0 1em .2em rgba(0, 0, 0, .2);
+}
+
+.panel {
+    border-radius: 12px;
+}
+
+.chat-panel {
+    position: relative;
+    max-width: 80%;
+}
+
+.chat-text {
+    padding: 1em;
+    word-break: normal;
+    word-spacing: normal;
+    white-space: pre-wrap;
+}
+
+
+.chat-panel.you, .chat-panel.chatbot {
+    background-color: whitesmoke;
+}
+
+.chat-panel.you {
+    border-bottom-left-radius: 0;
+}
+
+.chat-panel.chatbot {
+    border-bottom-right-radius: 0;
+}
+
+.source-code {
+    position: relative;
+    word-break: initial;
+    word-spacing: initial;
+    white-space: initial;
+}
+
+.code-action-buttons {
+    position: absolute;
+    color: lawngreen;
+    top: 0;
+    right: 0;
+}
+
+.code-action-buttons .btn {
+    width: auto !important;
+    height: auto !important;
+    min-width: auto !important;
+    min-height: auto !important;
+}
+
+.author {
+    position: absolute;
+    background-color: transparent;
+    padding: .5em;
+    border-radius: 1em;
+}
+
+.you .author {
+    bottom: -2em;
+    left: -1em;
+}
+
+.chatbot .author {
+    bottom: -2em;
+    right: -1em;
+}
+
+.chat-panels-container {
+    position: relative;
+    padding-bottom: 20vh;
+}
+
+.scroll-to {
+    position: sticky !important;
+    bottom: 50px;
+    left: 50px;
+    width: fit-content !important;
+}
+
+.history-container {
+    height: 100%;
+    position: sticky;
+    top: 0;
+    right: 0;
+}
+
+.history-list-container {
+    height: 100%;
+    max-height: 100vh;
+}
+
+ul.menu li a {
+    display: block;
+}
+
+.btn {
+    align-items: center;
+    background-color: #FFFFFF;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: .5rem;
+    box-shadow: rgba(0, 0, 0, 0.02) 0 1px 3px 0;
+    box-sizing: border-box;
+    color: rgba(0, 0, 0, 0.85);
+    cursor: pointer;
+    display: inline-flex;
+    font-family: system-ui, -apple-system, system-ui, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    justify-content: center;
+    line-height: 1.25;
+    min-height: 3rem;
+    padding: calc(.875rem - 1px) calc(1.5rem - 1px);
+    position: relative;
+    text-decoration: none;
+    transition: all 250ms;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    vertical-align: baseline;
+    width: auto;
+}
+
+.btn:hover,
+.btn:focus {
+    border-color: rgba(0, 0, 0, 0.15);
+    box-shadow: .15em .15em 8px -1px rgba(0, 0, 0, .2);
+    color: rgba(0, 0, 0, 0.65);
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.btn:active {
+    background-color: #F0F0F1;
+    border-color: rgba(0, 0, 0, 0.15);
+    box-shadow: rgba(0, 0, 0, 0.06) 0 2px 4px;
+    color: rgba(0, 0, 0, 0.65);
+    transform: translateY(0);
+}
+
+.btn.alert {
+    background-color: firebrick;
+    color: whitesmoke;
+}
+
+.btn.alert:active {
+    background-color: crimson;
+}
+
+.btn.success {
+    background-color: rgb(42, 200, 42);
+}
+
+.btn.success:active {
+    background-color: rgb(84, 242, 84);
+}
+
+.btn[disabled] {
+    background-color: darkgrey;
+    cursor: inherit;
+}
+.btn[disabled]:hover, .btn[disabled]:active {
+    background-color: darkgrey;
+    border-color: revert;
+    box-shadow: revert;
+    color: revert;
+    transform: revert;
+}
+
+.loading {
+    animation: rotation 2s infinite linear;
+}
+@keyframes rotation {
+     from {
+         transform: rotate(0deg);
+     }
+     to {
+         transform: rotate(360deg);
+     }
+ }
+
+
+/* #F9E80C #39A3D1 */

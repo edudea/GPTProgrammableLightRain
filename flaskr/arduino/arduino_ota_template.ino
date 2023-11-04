@@ -30,7 +30,7 @@ void setup() {
   // ArduinoOTA.setPort(8266);
 
   // Hostname defaults to esp8266-[ChipID]
-  // ArduinoOTA.setHostname("edudea-04");
+  // ArduinoOTA.setHostname("myesp8266");
 
   // No authentication by default
   ArduinoOTA.setPassword("/* PASSWORD_PLACEHOLDER */");
@@ -81,6 +81,8 @@ void setup() {
 }
 
 void loop() {
+  ArduinoOTA.handle();
+
   /* GENERATED LOOP CODE START */
   /* LOOP_CODE_PLACEHOLDER */
   /* GENERATED LOOP CODE END */

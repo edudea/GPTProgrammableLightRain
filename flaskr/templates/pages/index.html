@@ -10,47 +10,38 @@ Lichtregen
         <section class="flex flex-column chat-panels-container px3">
             {% if chat %}
             <h2>{{chat.name}}</h2>
-            {% for conversation in conversations %}
-            <div class="col mr-auto my2 px2 border panel chat-panel you" data-conversation-id="{{conversation.id}}">
-                <div class="chat-text">{{conversation.description}}</div>
-                <div class="bold caps author">Du</div>
-            </div>
-            <div class="col ml-auto my2 border panel chat-panel chatbot" data-conversation-id="{{conversation.id}}">
-                <div class="chat-text">{{conversation.answer}}</div>
-                <div class="bold caps author">Chatbot</div>
-            </div>
-            {% endfor %}
-            <button class="btn scroll-to scroll-to-first" onclick="scrollToFirstMessage()">↑<br>Erste Nachricht</button>
-            <button class="btn scroll-to scroll-to-last" onclick="scrollToLastMessage()">↓<br>Neuste Nachricht</button>
             {% else %}
             <h2>Erstelle deinen Lichteffekt</h2>
             {% endif %}
+            <button class="btn scroll-to scroll-to-first" onclick="scrollToFirstMessage()">↑<br>Erste Nachricht</button>
+            <button class="btn scroll-to scroll-to-last" onclick="scrollToLastMessage()">↓<br>Neuste Nachricht</button>
         </section>
     </div>
     <aside class="col col-3 history-container border-left">
         <div class="px2 overflow-auto history-list-container">
             <div>
                 <ul class="list-reset menu">
-                    <li><a href="/?new_chat" class="btn alert my1">Starte neuen Lichteffekt-Chat</a></li>
+                    <li><a href="{{url_for('index', new_chat=True)}}" class="btn alert my1">Starte neuen Lichteffekt-Chat</a></li>
                 </ul>
             </div>
             <div>
                 <h2>Historie</h2>
                 <ul class="list-reset menu">
                     {% for theChat in chats %}
-                    <li><a href="/{{ theChat.id }}" class="btn my1">{{theChat.name}}{% if theChat.id == chat.id %}
+                    <li><a href="{{url_for('lighteffect', chat_id=theChat.id)}}" class="btn my1">{{theChat.name}}{% if theChat.id == chat.id %}
                         (aktuell){% endif %}</a></li>
                     {% endfor %}
                 </ul>
             </div>
         </div>
     </aside>
-    <section class="col col-9 p2 edit-description-container">
+    <section class="col col-9 pb2 px2 edit-description-container">
         {% if chat %}
-        <form action="{{url_for('conversation', chat_id=chat.id)}}" method="post" name="edit-description"
-              class="flex border rounded he">
+        <form action="#" method="post" name="edit-description"
+              class="flex border rounded he" id="edit-description-form">
             {% else %}
-            <form action="{{url_for('new_chat')}}" method="post" name="edit-description" class="flex border rounded he">
+            <form action="#" method="post" name="edit-description" class="flex border rounded he"
+                  id="new-light-effect-form">
                 {% endif %}
                 <textarea class="col col-12 border-none p2" id="description-input" name="description" required autofocus
                           placeholder="Beschreibe den Lichteffekt für die Lichterkette. Beispiel:"></textarea>
@@ -60,8 +51,7 @@ Lichtregen
                     <span>Senden</span>
                     <img src="{{ url_for('static', filename='img/led-strip.png') }}" alt="Senden" width="42px"
                          class="enabled">
-                    <img src="{{ url_for('static', filename='img/led-strip_bw.png') }}" alt="Senden" width="42px"
-                         class="disabled">
+                    <img class="loading ml1" src="{{ url_for('static', filename='img/loading.png') }}" alt="Bitte warten" width="42px">
                 </button>
             </form>
     </section>
@@ -73,9 +63,138 @@ Lichtregen
         loading-image-file-name="{{ url_for('static', filename='img/loading.png') }}"
         run-code-of-conversation-endpoint="{{url_for('conversation_run', conversation_id='conversation-id-placeholder')}}"></script>
 <script src="{{url_for('static', filename='js/submitButtonHandling.es6')}}"></script>
-{% if chat %}
 <script src="{{url_for('static', filename='js/chatScrollHandling.es6')}}"></script>
-{% endif %}
+<script>
+    descriptionOfLightEffectEndpoint = "{{url_for('api_description_of_lighteffect', id=chat.id)}}"
+    lightEffectEndpoint = "{{url_for('api_new_lighteffect')}}"
+    conversationsOfLightEffectEndpoint = "{{url_for('api_conversations_of_light_effect', id=chat.id)}}"
+    class ChatLimitReached extends Error {
+        constructor(message) {
+            super(message);
+            this.name = "chat.limit.reached";
+        }
+    }
+    function appendYouMessage(conversationId, message) {
+        document.querySelector('.chat-panels-container button.scroll-to-first').insertAdjacentHTML('beforebegin',
+            `<div class="col mr-auto my2 px2 border panel chat-panel you" data-conversation-id="${conversationId}">
+    <div class="chat-text">${message}</div>
+    <div class="bold caps author">Du</div>
+</div>`)
+    }
+    function appendChatbotMessage(conversationId, message) {
+        document.querySelector('.chat-panels-container button.scroll-to-first').insertAdjacentHTML('beforebegin',
+            `<div class="col ml-auto my2 border panel chat-panel chatbot" data-conversation-id="${conversationId}">
+    <div class="chat-text">${message}</div>
+    <div class="bold caps author">Chatbot</div>
+</div>`)
+    }
+    function removeLastYouMessage() {
+        const youMessages = document.querySelectorAll('.chat-panels-container .chat-panel.you')
+        youMessages.item(youMessages.length - 1).remove()
+    }
+
+    let isChatting = false
+    function newLightEffect(event) {
+        event.preventDefault()
+        if (isChatting) return false;
+        isChatting = true
+
+        event.target.querySelectorAll('.btn').forEach(el => el.disabled = true)
+        const description = document.getElementById('description-input').value
+        appendYouMessage('', description)
+        scrollToLastMessage()
+        fetch(lightEffectEndpoint, {
+            headers: new Headers({'content-type': 'application/json'}),
+            method: 'POST',
+            body: JSON.stringify({description})
+        }).then(async response => {
+            if (response.ok) {
+                removeLastYouMessage()
+                const json = await response.json()
+                appendYouMessage(json.conversationId, json.description)
+                appendChatbotMessage(json.conversationId, json.answer)
+                scrollToLastMessage()
+                document.getElementById('description-input').value = ''
+                window.location.href = json.href
+            } else if (!response.ok) {
+                throw new Error(`Request's response not ok: ${await response.text()}`);
+            }
+        }).catch(_ => {
+            removeLastYouMessage()
+        }).finally(() => {
+            event.target.querySelectorAll('.btn').forEach(el => el.disabled = false)
+            isChatting = false
+        });
+        return false
+    }
+
+    function editDescriptionForm(event) {
+        event.preventDefault()
+        if (isChatting) return false;
+        isChatting = true
+        event.target.querySelectorAll('.btn').forEach(el => el.disabled = true)
+        const description = document.getElementById('description-input').value
+        appendYouMessage('', description)
+        scrollToLastMessage()
+        fetch(descriptionOfLightEffectEndpoint, {
+            headers: new Headers({'content-type': 'application/json'}),
+            method: 'POST',
+            body: JSON.stringify({description})
+        }).then(async response => {
+            if (response.ok) {
+                removeLastYouMessage()
+                const json = await response.json()
+                appendYouMessage(json.id, json.description)
+                appendChatbotMessage(json.id, json.answer)
+                scrollToLastMessage()
+                document.getElementById('description-input').value = ''
+            } else if (!response.ok && (await response.json()).type === 'chat.limit.reached') {
+                throw new ChatLimitReached()
+            } else if (!response.ok) {
+                throw new Error(`Request's response not ok: ${await response.text()}`);
+            }
+        }).catch(error => {
+            removeLastYouMessage()
+            if (error.name === 'chat.limit.reached') {
+                console.error('Request errored: ', error);
+                document.body.insertAdjacentHTML('beforeend',
+`<div id="modalOverlay" class="modal-overlay">
+  <div class="modal">
+    <header class="flex">
+        <h3 class="mb0">Test</h3>
+        <button id="closeModal" class="btn ml-auto">X</button>
+    </header>
+    <p>Die maximale Chat-Länge für den Lichteffekt ist erreicht. Es kann leider nicht weiter an diesem Lichteffekt gearbeitet werden.</p>
+    <p class="flex justify-end">
+        <a href="{{url_for('index', new_chat=True)}}" class="btn alert">Neuer Lichteffekt</a>
+    </p>
+  </div>
+</div>`)
+                document.getElementById('closeModal').addEventListener('click', () => {
+                    document.getElementById('modalOverlay').remove()
+                })
+            }
+        }).finally(() => {
+            event.target.querySelectorAll('.btn').forEach(el => el.disabled = false)
+            isChatting = false
+        });
+        return false
+    }
+
+    document.getElementById('new-light-effect-form')?.addEventListener('submit', newLightEffect)
+    document.getElementById('edit-description-form')?.addEventListener('submit', editDescriptionForm)
+
+    fetch(conversationsOfLightEffectEndpoint)
+        .then(async response => {
+            if (response.ok) {
+                (await response.json()).forEach(conversation => {
+                    appendYouMessage(conversation.id, conversation.description)
+                    appendChatbotMessage(conversation.id, conversation.answer)
+                })
+            }
+            scrollToLastMessage()
+        })
+</script>
 {% endblock %}
 <a href="https://www.flaticon.com/free-icons/led-strip" title="led-strip icons">Led-strip icons created by smalllikeart
     - Flaticon</a>

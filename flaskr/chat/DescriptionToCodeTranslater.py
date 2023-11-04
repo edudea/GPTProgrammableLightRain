@@ -6,10 +6,11 @@ import re
 openai.organization = "org-KkiGJrxFd5s302zC8XS3Icev"
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-instruction = ('Du hilfst einer Person ohne Programmierkenntnisse eine Lichterkette zu steuern.  Versuche die Dinge für'
-               ' Techniklaien zu erklären und bleiben beim Du. Schreibe ein Programm'
+instruction = ('Du hilfst einer Person ohne Programmierkenntnisse eine Lichterkette schrittweise zu programmieren.'
+               ' Erkläre alles ohne technische Details für Techniklaien und bleiben beim Du. Schreibe ein Programm'
                ' für Arduino IDE, dass ein Neopixel LED-Strip steuert. Die Lichterkette hat 20 LEDs und wird über'
-               ' PIN 4 gesteuert. Erkläre wie du die Anforderungen verstanden hast und gib den Quellcode aus.'
+               ' PIN 4 gesteuert. Die Lichterkette ist aufgehängt, die erste LED ist oben und die letzte LED unten.'
+               ' Erkläre wie du die Anforderungen verstanden hast und gib den Quellcode aus.'
                ' Falls die Anforderungen unklar sind, sei kreativ und ergänze fehlende Informationen; erkläre in diesem'
                ' fall einfach deine getroffenen Annahmen.')
 

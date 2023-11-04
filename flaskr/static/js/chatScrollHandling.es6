@@ -1,9 +1,9 @@
-let chatContainer = document.querySelector(".chat-panels-container")
+let htmlElement = document.querySelector("html")
 let scrollToFirstBtn = document.querySelector(".scroll-to-first")
 let scrollToLastBtn = document.querySelector(".scroll-to-last")
 
 function scrollChatTo(y) {
-    chatContainer.scroll({
+    window.scroll({
         top: y,
         left: 0,
         behavior: "smooth",
@@ -11,25 +11,25 @@ function scrollChatTo(y) {
 }
 
 scrollToFirstMessage = () => scrollChatTo(0)
-scrollToLastMessage = () => scrollChatTo(chatContainer.scrollHeight)
+scrollToLastMessage = () => scrollChatTo(document.body.scrollHeight)
 
 function adaptButtonsToScrollState() {
-    if (chatContainer.scrollHeight < chatContainer.clientHeight + 420) {
+    if (document.body.scrollHeight < window.innerHeight + 420) {
         scrollToFirstBtn.classList.add("display-none")
         scrollToLastBtn.classList.add("display-none")
-    } else if (chatContainer.scrollTop < 100) {
-        scrollToFirstBtn.classList.add("display-none")
-        scrollToLastBtn.classList.remove("display-none")
-    } else if (chatContainer.scrollTop > chatContainer.scrollHeight - chatContainer.clientHeight - 420) {
+    } else if (htmlElement.scrollTop > document.body.scrollHeight - window.innerHeight - 420) {
         scrollToFirstBtn.classList.remove("display-none")
         scrollToLastBtn.classList.add("display-none")
+    } else if (htmlElement.scrollTop < document.body.scrollHeight * .75) {
+        scrollToFirstBtn.classList.add("display-none")
+        scrollToLastBtn.classList.remove("display-none")
     } else {
         scrollToFirstBtn.classList.add("display-none")
         scrollToLastBtn.classList.add("display-none")
     }
 }
 
-chatContainer.onscroll = function () {
+window.onscroll = function () {
     adaptButtonsToScrollState();
 }
 scrollToLastMessage()

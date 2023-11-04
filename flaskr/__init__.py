@@ -34,69 +34,78 @@ def create_app(test_config=None):
             latest_chat = get_db().cursor().execute(
                 "SELECT * FROM chats WHERE updatedAt=(SELECT max(updatedAt) FROM chats);").fetchone()
             if latest_chat:
-                return redirect(url_for('chat', chat_id=latest_chat['id']))
+                return redirect(url_for('lighteffect', chat_id=latest_chat['id']))
 
         chat_rows = get_db().cursor().execute("SELECT * FROM chats ORDER BY updatedAt DESC").fetchall()
         chats = list(map(lambda row: Chat(row['id'], row['name'], row['createdAt'], row['updatedAt']), chat_rows))
-        return render_template('pages/index.html', chat=None, conversations=[], chats=chats)
+        return render_template('pages/index.html', chat=None, chats=chats)
 
     @app.route('/<chat_id>')
-    def chat(chat_id):
+    def lighteffect(chat_id):
         chat_row = get_db().cursor().execute("SELECT * FROM chats WHERE id=?", [chat_id]).fetchone()
         chat = Chat(chat_row['id'], chat_row['name'], chat_row['createdAt'], chat_row['updatedAt'], chat_row['deleted'])
-        conversation_rows = get_db().cursor().execute("SELECT * FROM conversations WHERE chatId=?",
-                                                      [chat_id]).fetchall()
-        conversations = list(
-            map(lambda row: Conversation(row['id'], row['chatId'], row['description'], row['answer'], row['code'],
-                                         row['createdAt'], row['updatedAt']), conversation_rows))
 
         chat_rows = get_db().cursor().execute("SELECT * FROM chats ORDER BY updatedAt DESC").fetchall()
         chats = list(map(lambda row: Chat(row['id'], row['name'], row['createdAt'], row['updatedAt']), chat_rows))
-        return render_template('pages/index.html', chat=chat, conversations=conversations, chats=chats)
+        return render_template('pages/index.html', chat=chat, chats=chats)
 
-    @app.route('/chat', methods=['POST'])
-    def new_chat():
-        if 'description' not in request.form:
-            return redirect(url_for('index'))
+    @app.route('/api/lighteffects/<id>/conversations', methods=['POST'])
+    def api_description_of_lighteffect(id):
+        connection = get_db()
+        curser = connection.cursor()
+        conversation_rows = get_db().cursor().execute("SELECT * FROM conversations WHERE chatId=?",
+                                                      [id]).fetchall()
+        historyConversations = list(
+            map(lambda row: Conversation(row['id'], row['chatId'], row['description'], row['answer'], row['code'],
+                                         row['createdAt'], row['updatedAt']), conversation_rows))
+        description = request.get_json().get('description')
+        try:
+            conversation = DescriptionToCodeTranslater.send_description(description, historyConversations)
+            conversationId = generate_id()
+            curser.execute("INSERT INTO conversations (id, chatId, description, answer, code) VALUES (?, ?, ?, ?, ?)",
+                           (conversationId, id, conversation.description, conversation.answer, conversation.code))
+            connection.commit()
+            if conversation.code is not None:
+                ArduinoBridge.deploy_locally(conversation.code)
+            response = make_response(
+                jsonify({'answer': conversation.answer, 'description': conversation.description, 'id': conversationId}),
+                201)
+        except ExceedsLimitsError:
+            response = make_response(jsonify({'message': 'Error: Reached chat limit.', 'type': 'chat.limit.reached'}),
+                                     500)
+        return response
 
+    @app.route('/api/lighteffects', methods=['POST'])
+    def api_new_lighteffect():
         connection = get_db()
         curser = connection.cursor()
         chat_id = generate_id()
-        description = request.form['description']
+        description = request.get_json().get('description')
         response = DescriptionToCodeTranslater.send_description(description)
         chat_name = DescriptionToCodeTranslater.get_chat_name_suggestion(description, response.answer)
         curser = curser.execute("INSERT INTO chats (id, name) VALUES (?, ?)", (chat_id, chat_name))
+        conversation_id = generate_id()
         curser.execute("INSERT INTO conversations (id, chatId, description, answer, code) VALUES (?, ?, ?, ?, ?)",
-                       (generate_id(), chat_id, response.description, response.answer, response.code))
+                       (conversation_id, chat_id, response.description, response.answer, response.code))
         connection.commit()
 
         if response.code is not None:
             ArduinoBridge.deploy_locally(response.code)
-        return redirect(url_for('chat', chat_id=chat_id))
+        response = make_response(jsonify({'id': chat_id, "conversationId": conversation_id,
+                                          "description": response.description, "answer": response.answer,
+                                          "href": url_for('lighteffect', chat_id=chat_id)}), 201)
+        return response
 
-    @app.route('/chat/<chat_id>', methods=['POST'])
-    def conversation(chat_id):
-        if 'description' not in request.form:
-            return redirect(url_for('index'))
-
-        connection = get_db()
-        curser = connection.cursor()
+    @app.route('/api/lighteffects/<id>/conversations')
+    def api_conversations_of_light_effect(id):
         conversation_rows = get_db().cursor().execute("SELECT * FROM conversations WHERE chatId=?",
-                                                      [chat_id]).fetchall()
-        historyConversations = list(
-            map(lambda row: Conversation(row['id'], row['chatId'], row['description'], row['answer'], row['code'],
-                                         row['createdAt'], row['updatedAt']), conversation_rows))
-        description = request.form['description']
-        try:
-            response = DescriptionToCodeTranslater.send_description(description, historyConversations)
-            curser.execute("INSERT INTO conversations (id, chatId, description, answer, code) VALUES (?, ?, ?, ?, ?)",
-                           (generate_id(), chat_id, response.description, response.answer, response.code))
-            connection.commit()
-            if response.code is not None:
-                ArduinoBridge.deploy_locally(response.code)
-            return redirect(url_for('index', chat_id=chat_id))
-        except ExceedsLimitsError:
-            return redirect(url_for('index', chat_id=chat_id))
+                                                      [id]).fetchall()
+        conversations = list(
+            map(lambda row: {'id': row['id'], 'chatId': row['chatId'], 'description': row['description'],
+                             'answer': row['answer'], 'code': row['code'], 'createdAt': row['createdAt'],
+                             'updatedAt': row['updatedAt']}, conversation_rows))
+        response = make_response(jsonify(conversations), 200)
+        return response
 
     @app.route('/chat/run/<conversation_id>', methods=['POST'])
     def conversation_run(conversation_id):

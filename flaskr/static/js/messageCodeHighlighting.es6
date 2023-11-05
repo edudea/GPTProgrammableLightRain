@@ -20,14 +20,16 @@ const findAndReplaceCodeBlock = chatElement => {
         return before + htmlReplacement.tagopen + hljs.highlight(code, {language: 'cpp'}).value + htmlReplacement.tagclose + after;
     });
 };
-document.querySelectorAll('.chat-text').forEach(findAndReplaceCodeBlock)
+//document.querySelectorAll('.chat-text').forEach(findAndReplaceCodeBlock)
 
 function callback(mutationList, observer) {
     mutationList.forEach((mutation) => {
         mutation.addedNodes?.forEach((node) => {
             if (node.nodeType === Node.ELEMENT_NODE) {
-                if (node.matches('.chat-text') || node.querySelector('.chat-text')) {
+                if (node.matches('.chat-text')) {
                     findAndReplaceCodeBlock(node)
+                } else if (node.querySelector('.chat-text')) {
+                    findAndReplaceCodeBlock(node.querySelector('.chat-text'))
                 }
             }
         });
@@ -72,8 +74,8 @@ function runCodeOfConversation($this, conversationId) {
     });
 }
 
-document.body.insertAdjacentHTML('beforeend', `<script>
+document.body.insertAdjacentHTML('beforeend', `<style>
 .run-code.alert .default, .run-code.alert .deploying {
     display: none !important;
 }
-</script>`)
+</style>`)

@@ -1,8 +1,9 @@
-import re
 import os
 import subprocess
 
 from flask import current_app
+
+from flaskr.arduino.CodeSplitter import extract_sections
 
 arduino_cli = os.getenv("ARDUINO_CLI")
 ota_password = os.getenv("OTA_PWD")
@@ -21,24 +22,19 @@ placeholderNames = {
 
 
 def deploy_locally(code):
-    # split_code = (re.compile("(?P<init>.*)(void setup[^\n]*)(?P<setup>(.(?<!\n}\n))*)(\n}\n)"
-    #                         "(?P<inbetween>(.(?<!void loop\(\)))*)(void loop\(\)[^\n]+)(?P<loop>(.(?<!\n}\n))*)(\n}\n{0,1}){1}"
-    #                         "(?P<end>(.(?<!\n}))*)", flags=re.DOTALL)
-    #              .search(code))
-    split_code = re.compile(
-        r"(?P<init>[\s\S]*?)void\s+setup\s*\(\s*\)\s*\{(?P<setup>[\s\S]*?)\}(?P<inbetween>[\s\S]*?)void\s+loop\s*\(\s*\)\s*\{(?P<loop>[\s\S]*?)\}(?P<end>[\s\S]*)$",
-        re.DOTALL).search(code)
-    if len(split_code.groups()) < 4:
+    try:
+        split_code = extract_sections(code)
+    except:
         raise FailedToSplitCodeError
 
     # with open("arduino_ota_template.ino", "r") as file:
     with current_app.open_resource("arduino/arduino_ota_template.ino", "r") as file:
         template_content = file.read()
-        template_content = template_content.replace(placeholderNames['init'], split_code.group("init"))
-        template_content = template_content.replace(placeholderNames['setup'], split_code.group("setup"))
-        template_content = template_content.replace(placeholderNames['loop'], split_code.group("loop"))
+        template_content = template_content.replace(placeholderNames['init'], split_code["init"])
+        template_content = template_content.replace(placeholderNames['setup'], split_code["setup"])
+        template_content = template_content.replace(placeholderNames['loop'], split_code["loop"])
         template_content = template_content.replace(placeholderNames['helper'],
-                                                    split_code.group("inbetween") + "\n" + (split_code.group("end")))
+                                                    split_code["inbetween"] + "\n" + (split_code["end"]))
         template_content = template_content.replace(placeholderNames['ota_password'], ota_password)
         template_content = template_content.replace(placeholderNames['wlan_ssid'], wlan_ssid)
         template_content = template_content.replace(placeholderNames['wlan_pwd'], wlan_password)

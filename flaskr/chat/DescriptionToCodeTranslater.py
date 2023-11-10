@@ -26,7 +26,7 @@ def send_description(lighteffect_id, conversation_id, description, socketio, con
             messages.append({"role": "user", "content": conversation.description})
             messages.append({"role": "assistant", "content": conversation.answer})
     messages.append({"role": "user", "content": description})
-    model = "gpt-4" if use_large_model else "gpt-3.5-turbo"
+    model = "gpt-4" if use_large_model else "gpt-3.5-turbo-1106"
     try:
         completion = openai.ChatCompletion.create(model=model, messages=messages, stream=True)
 

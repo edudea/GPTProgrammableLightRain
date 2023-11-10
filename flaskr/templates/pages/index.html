@@ -21,8 +21,11 @@ Lichtregen
         <div class="px2 overflow-auto history-list-container">
             <div>
                 <ul class="list-reset menu">
+                    {% if chat %}
+                    <li><a href="{{url_for('lighteffect_deploy', lighteffect_id=chat.id)}}" class="btn my1">Fertigen Lichteffekt in Lichtregen</a></li>
                     <li><a href="{{url_for('index', new_chat=True)}}" class="btn alert my1">Starte neuen
                         Lichteffekt-Chat</a></li>
+                    {% endif %}
                 </ul>
             </div>
             <div>

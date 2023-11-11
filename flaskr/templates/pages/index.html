@@ -30,11 +30,10 @@ Lichtregen
             </div>
             <div>
                 <h2>Historie</h2>
-                <ul class="list-reset menu">
+                <ul class="list-reset menu history">
                     {% for theChat in chats %}
-                    <li><a href="{{url_for('lighteffect', chat_id=theChat.id)}}" class="btn my1">{{theChat.name}}{% if
-                        theChat.id == chat.id %}
-                        (aktuell){% endif %}</a></li>
+                    <li class="{% if theChat.id == chat.id %}active{% endif %}"><a href="{{url_for('lighteffect', chat_id=theChat.id)}}" class="btn my1">{{theChat.name}}{% if
+                        theChat.id == chat.id %} (aktuell){% endif %}</a></li>
                     {% endfor %}
                 </ul>
             </div>

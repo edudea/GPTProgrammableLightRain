@@ -180,6 +180,10 @@ ul.menu li a {
     display: block;
 }
 
+ul.history li.active a {
+    background-color: #C0ECFF;
+}
+
 .btn {
     align-items: center;
     background-color: #FFFFFF;

@@ -19,14 +19,14 @@ instruction_naming = (
     'Gib dem Lichteffekt einen kurzen, prägnanten Namen auf deutsch. Der Name soll nicht länger als 30 Zeichen sein.')
 
 
-def send_description(lighteffect_id, conversation_id, description, socketio, conversations=None, use_large_model=False):
+def send_description(lighteffect_id, conversation_id, description, socketio, conversations=None, use_large_model=True):
     messages = [{"role": "system", "content": instruction}]
     if conversations is not None:
         for conversation in conversations:
             messages.append({"role": "user", "content": conversation.description})
             messages.append({"role": "assistant", "content": conversation.answer})
     messages.append({"role": "user", "content": description})
-    model = "gpt-4" if use_large_model else "gpt-3.5-turbo-1106"
+    model = "gpt-4-1106-preview" if use_large_model else "gpt-3.5-turbo-1106"
     try:
         completion = openai.ChatCompletion.create(model=model, messages=messages, stream=True)
 

@@ -291,6 +291,7 @@ ul.history li.active a {
     z-index: 1000;
     max-width: min(640px, 90vw);
     width: 100%;
+    min-height: 200px;
 }
 
 .modal header {
@@ -300,6 +301,36 @@ ul.history li.active a {
     padding: 8px 12px;
     align-self: start;
     min-height: revert;
+}
+
+body.deployed-successfully #modal-run-code-overlay .modal {
+    background-color: #8FBC8F;
+}
+
+body.deployment-failed-no-retry #modal-run-code-overlay .modal,
+body.deployment-failed #modal-run-code-overlay .modal {
+    background-color: #ffbec0;
+}
+
+
+#modal-run-code-overlay .message,
+#modal-run-code-overlay .actions {
+    display: none;
+}
+body.deploying #modal-run-code-overlay .deploying {
+    display: revert;
+}
+body.deployed-successfully #modal-run-code-overlay .success {
+    display: revert;
+}
+body.deployment-failed #modal-run-code-overlay .error {
+    display: revert;
+}
+body.deployment-failed-no-retry #modal-run-code-overlay .error-no-retry {
+    display: revert;
+}
+body.deployment-failed-no-retry #modal-run-code-overlay .actions.error-no-retry {
+    display: flex;
 }
 
 /* #F9E80C #39A3D1 */

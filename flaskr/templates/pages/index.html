@@ -63,10 +63,12 @@ Lichtregen
 </div>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/magula.min.css') }}">
 <script src="{{ url_for('static', filename='js/highlight.min.js') }}"></script>
+<script src="{{url_for('static', filename='js/runCode.es6')}}"
+        run-code-of-conversation-endpoint="{{url_for('conversation_run', conversation_id='conversation-id-placeholder')}}"
+        loading-image-file-name="{{ url_for('static', filename='img/loading.png') }}"></script>
 <script src="{{url_for('static', filename='js/messageCodeHighlighting.es6')}}"
         execute-image-file-name="{{ url_for('static', filename='img/led-strip.png') }}"
-        loading-image-file-name="{{ url_for('static', filename='img/loading.png') }}"
-        run-code-of-conversation-endpoint="{{url_for('conversation_run', conversation_id='conversation-id-placeholder')}}"></script>
+        loading-image-file-name="{{ url_for('static', filename='img/loading.png') }}"></script>
 <script src="{{url_for('static', filename='js/submitButtonHandling.es6')}}"></script>
 <script src="{{url_for('static', filename='js/chatScrollHandling.es6')}}"></script>
 <script>
@@ -138,12 +140,13 @@ Lichtregen
                     `<div id="modalOverlay" class="modal-overlay">
   <div class="modal">
     <header class="flex">
-        <h3 class="mb0">Test</h3>
+        <h3 class="mb0">Fehler beim Aktualisieren</h3>
         <button id="closeModal" class="btn ml-auto">X</button>
     </header>
     <p>Die maximale Chat-Länge für den Lichteffekt ist erreicht. Es kann leider nicht weiter an diesem Lichteffekt gearbeitet werden.</p>
     <p class="flex justify-end">
         <a href="{{url_for('index', new_chat=True)}}" class="btn alert">Neuer Lichteffekt</a>
+        <a href="{{url_for('lighteffect_deploy', lighteffect_id=chat.id)}}" class="btn ml1">Fertigen Lichteffekt in Lichtregen</a>
     </p>
   </div>
 </div>`)

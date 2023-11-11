@@ -1,11 +1,12 @@
-const executeImageFileName = document.currentScript.getAttribute('execute-image-file-name')
-const loadingImageFileName = document.currentScript.getAttribute('loading-image-file-name')
-const findAndReplaceCodeBlock = chatElement => {
-    const regex = /(?<before>.*)\n```.{0,4}\n(?<code>.*)\n```\n(?<after>.*)/s;
-    const conversationId = chatElement.parentElement.getAttribute("data-conversation-id")
+(() => {
+    const executeImageFileName = document.currentScript.getAttribute('execute-image-file-name')
+    const loadingImageFileName = document.currentScript.getAttribute('loading-image-file-name')
+    const findAndReplaceCodeBlock = chatElement => {
+        const regex = /(?<before>.*)\n```.{0,4}\n(?<code>.*)\n```\n(?<after>.*)/s;
+        const conversationId = chatElement.parentElement.getAttribute("data-conversation-id")
 
-    const htmlReplacement = {
-        tagopen: `<div class="border panel source-code flex flex-column my1">
+        const htmlReplacement = {
+            tagopen: `<div class="border panel source-code flex flex-column my1">
                             <div class="code-action-buttons flex">
                                 <button class="btn success run-code" onclick="runCodeOfConversation(this, '${conversationId}')">
                                     <div class="default">Ausführen <img class="ml1" src="${executeImageFileName}" alt="Auf Lichtstreifen abspielen" width="20px" class="ml1"></div>
@@ -14,68 +15,37 @@ const findAndReplaceCodeBlock = chatElement => {
                                 </button>
                             </div>
                             <pre class="px2"><code>`,
-        tagclose: "</code></pre></div>"
+            tagclose: "</code></pre></div>"
+        };
+        chatElement.innerHTML = chatElement.innerHTML.replace(regex, (match, before, code, after) => {
+            return before + htmlReplacement.tagopen + hljs.highlight(code, {language: 'cpp'}).value + htmlReplacement.tagclose + after;
+        });
     };
-    chatElement.innerHTML = chatElement.innerHTML.replace(regex, (match, before, code, after) => {
-        return before + htmlReplacement.tagopen + hljs.highlight(code, {language: 'cpp'}).value + htmlReplacement.tagclose + after;
-    });
-};
+
 //document.querySelectorAll('.chat-text').forEach(findAndReplaceCodeBlock)
 
-function callback(mutationList, observer) {
-    mutationList.forEach((mutation) => {
-        mutation.addedNodes?.forEach((node) => {
-            if (node.nodeType === Node.ELEMENT_NODE) {
-                if (node.matches('.chat-text')) {
-                    findAndReplaceCodeBlock(node)
-                } else if (node.querySelector('.chat-text')) {
-                    findAndReplaceCodeBlock(node.querySelector('.chat-text'))
+    function callback(mutationList, observer) {
+        mutationList.forEach((mutation) => {
+            mutation.addedNodes?.forEach((node) => {
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                    if (node.matches('.chat-text')) {
+                        findAndReplaceCodeBlock(node)
+                    } else if (node.querySelector('.chat-text')) {
+                        findAndReplaceCodeBlock(node.querySelector('.chat-text'))
+                    }
                 }
-            }
+            });
         });
-    });
-}
+    }
 
-const observer = new MutationObserver(callback);
-observer.observe(document.body, {childList: true, subtree: true, attributes: false, characterData: false});
-hljs.highlightAll();
+    const observer = new MutationObserver(callback);
+    observer.observe(document.body, {childList: true, subtree: true, attributes: false, characterData: false});
+    hljs.highlightAll();
 
 
-const run_code_of_conversation_endpoint = document.currentScript.getAttribute('run-code-of-conversation-endpoint')
-
-let isDeploying = false
-
-function runCodeOfConversation($this, conversationId) {
-    if (isDeploying) return;
-    isDeploying = true
-    $this.querySelector('.deploying').classList.remove('hide')
-    $this.querySelector('.default').classList.add('hide')
-    document.querySelectorAll('.run-code').forEach(el => el.disabled = true)
-    fetch(run_code_of_conversation_endpoint.replace('conversation-id-placeholder', conversationId), {
-        method: 'POST'
-    }).then(async response => {
-        if (!response.ok) {
-            throw new Error(`Netzwerkantwort war nicht ok: ${await response.text()}`);
-        }
-    })
-        .catch(error => {
-            console.error('Fehler beim Senden des Requests:', error);
-            $this.classList.replace('success', 'alert')
-            $this.querySelector('.errored').classList.remove('hide')
-            setTimeout(() => {
-                $this.querySelector('.errored').classList.add('hide')
-                $this.classList.replace('alert', 'success')
-            }, 5000)
-        }).finally(() => {
-        $this.querySelector('.default').classList.remove('hide')
-        $this.querySelector('.deploying').classList.add('hide')
-        document.querySelectorAll('.run-code').forEach(el => el.disabled = false)
-        isDeploying = false
-    });
-}
-
-document.body.insertAdjacentHTML('beforeend', `<style>
+    document.body.insertAdjacentHTML('beforeend', `<style>
 .run-code.alert .default, .run-code.alert .deploying {
     display: none !important;
 }
 </style>`)
+})()

@@ -2,10 +2,13 @@ import datetime
 import json
 import os
 import subprocess
+import time
 from collections import deque
 from queue import Queue
 from threading import Thread
 from typing import List, Dict
+
+TIMEDELTA_TO_EXPECT_DEVICE_AS_OUTDATED = datetime.timedelta(minutes=10)
 
 
 class Device:
@@ -34,13 +37,14 @@ class Device:
         }
 
 
-thread: Thread | None
+watcher_thread: Thread | None
+cleaner_thread: Thread | None
 board_list: Dict[str, Device]
 queue: Queue
 network_boards_queue: deque
 
 
-def update_board_list(event):
+def _update_board_list(event):
     global board_list
     event_type = event['eventType']
     port_info = event['port']
@@ -61,7 +65,7 @@ def update_board_list(event):
 arduino_cli = os.getenv("ARDUINO_CLI")
 
 
-def arduino_cli_watcher():
+def _arduino_cli_watcher():
     with subprocess.Popen([arduino_cli, "board", "list", "-w", "--format", "json"],
                           stdout=subprocess.PIPE,
                           bufsize=1,
@@ -71,19 +75,36 @@ def arduino_cli_watcher():
             current_json += line
             if line.startswith('}'):
                 event = json.loads(current_json)
-                update_board_list(event)
+                _update_board_list(event)
                 current_json = ''
         proc.stdout.close()
 
 
+def _board_list_cleaner():
+    global board_list, network_boards_queue
+    outdated_devices = []
+    while True:
+        for device in filter(lambda d: not d.online and d.last_seen, board_list):
+            if device.last_seen < datetime.datetime.now() - TIMEDELTA_TO_EXPECT_DEVICE_AS_OUTDATED:
+                outdated_devices.append(device.label)
+        for label in outdated_devices:
+            network_boards_queue.remove(board_list[label])
+            del board_list[label]
+        time.sleep(10)
+
+
 def start_watching():
-    global thread, board_list, queue, network_boards_queue
+    global watcher_thread, cleaner_thread, board_list, queue, network_boards_queue
     print('Started arduino board watcher')
-    thread = Thread(target=arduino_cli_watcher)
-    thread.start()
     board_list = {}
     queue = Queue()
     network_boards_queue = deque()
+    watcher_thread = Thread(target=_arduino_cli_watcher)
+    watcher_thread.daemon = True
+    watcher_thread.start()
+    cleaner_thread = Thread(target=_board_list_cleaner)
+    cleaner_thread.daemon = True
+    cleaner_thread.start()
 
 
 def get_board_list() -> List[Device]:

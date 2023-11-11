@@ -132,7 +132,7 @@ def create_app(test_config=None):
                                                       [id]).fetchall()
         conversations = list(
             map(lambda row: {'id': row['id'], 'chatId': row['chatId'], 'description': escape(row['description']),
-                             'answer': escape(row['answer']), 'code': escape(row['code']),
+                             'answer': escape(row['answer']), 'code': escape(row['code']) if row['code'] else "",
                              'createdAt': row['createdAt'],
                              'updatedAt': row['updatedAt']}, conversation_rows))
         response = make_response(jsonify(conversations), 200)

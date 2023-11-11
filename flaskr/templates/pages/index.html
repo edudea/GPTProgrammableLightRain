@@ -112,6 +112,7 @@ Lichtregen
         if (isChatting) return false;
         isChatting = true
         event.target.querySelectorAll('.btn').forEach(el => el.disabled = true)
+        document.getElementById('description-input').disabled = true
         const description = document.getElementById('description-input').value
         fetch(descriptionOfLightEffectEndpoint, {
             headers: new Headers({'content-type': 'application/json'}),
@@ -153,6 +154,7 @@ Lichtregen
             }
         }).finally(() => {
             event.target.querySelectorAll('.btn').forEach(el => el.disabled = false)
+            document.getElementById('description-input').disabled = false
             isChatting = false
         });
         return false
@@ -177,6 +179,7 @@ Lichtregen
         isChatting = true
         event.target.querySelectorAll('.btn').forEach(el => el.disabled = true)
         const description = document.getElementById('description-input').value
+        document.getElementById('description-input').disabled = true
         fetch(lightEffectEndpoint, {
             headers: new Headers({'content-type': 'application/json'}),
             method: 'POST',
@@ -192,12 +195,20 @@ Lichtregen
         }).catch(error => {
             console.error("Failed to create light effect: ", error)
             event.target.querySelectorAll('.btn').forEach(el => el.disabled = false)
+            document.getElementById('description-input').disabled = false
             isChatting = false
         });
         return false
     }
     document.getElementById('new-light-effect-form')?.addEventListener('submit', newLightEffect)
     // {% endif %}
+
+    document.getElementById('description-input').onkeydown = event => {
+        if(event.key === "Enter") {
+            event.preventDefault();
+            document.getElementById('description-input').closest('form').querySelector('.btn[type=submit]').click()
+        }
+    }
 </script>
 <script type="module">
     import {io} from "{{ url_for('static', filename='js/socket.io.esm.min.js') }}";

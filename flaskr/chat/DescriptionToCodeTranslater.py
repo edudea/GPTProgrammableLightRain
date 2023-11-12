@@ -41,7 +41,7 @@ def send_description(lighteffect_id, conversation_id, description, socketio, con
                     socketio.emit(f"/lighteffects/{lighteffect_id}/conversations/{conversation_id}/answer/chunk",
                                   {'id': conversation_id, 'chunk': content, 'lighteffectId': lighteffect_id})
 
-        code_pattern_search = re.compile(r".*```.{0,4}\n(?P<code>.*)```\n.*", flags=re.DOTALL).search(answer)
+        code_pattern_search = re.compile(r".*```.{0,10}\n(?P<code>.*)```\n.*", flags=re.DOTALL).search(answer)
         code = code_pattern_search.group(
             "code") if code_pattern_search is not None and "code" in code_pattern_search.groupdict().keys() else None
 

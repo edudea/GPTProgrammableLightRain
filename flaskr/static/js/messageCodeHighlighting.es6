@@ -2,7 +2,7 @@
     const executeImageFileName = document.currentScript.getAttribute('execute-image-file-name')
     const loadingImageFileName = document.currentScript.getAttribute('loading-image-file-name')
     const findAndReplaceCodeBlock = chatElement => {
-        const regex = /(?<before>.*)\n```.{0,4}\n(?<code>.*)\n```\n(?<after>.*)/s;
+        const regex = /(?<before>.*)\n```.{0,10}\n(?<code>.*)\n```\n(?<after>.*)/s;
         const conversationId = chatElement.parentElement.getAttribute("data-conversation-id")
 
         const htmlReplacement = {

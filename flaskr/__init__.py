@@ -159,7 +159,7 @@ def create_app(test_config=None):
         device = get_next_network_device()
         if device is not None:
             ArduinoBridge.deploy_code_to_device(code, device, app, True)
-            return redirect(url_for('index', new_chat=True))
+            return redirect(url_for('index', new_chat=True, deployed_chat=lighteffect_id))
         else:
             return redirect(url_for('lighteffect', chat_id=lighteffect_id))
 

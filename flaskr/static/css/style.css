@@ -297,6 +297,9 @@ ul.history li.active a {
 .modal header {
     width: 100%;
 }
+.modal p {
+    margin-bottom: .25em;
+}
 .modal header .btn {
     padding: 8px 12px;
     align-self: start;

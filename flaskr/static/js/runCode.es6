@@ -93,3 +93,26 @@ function setDescriptionToError() {
     document.getElementById("close-modal").click()
     document.getElementById("description-input").value = "Der Programmcode kann nicht ausgeführt werden. Suche und behebe Programmfehler."
 }
+
+(()=> {
+    const queryParams = new URLSearchParams(window.location.search);
+    if (queryParams.has('deployed_chat')) {
+            document.body.insertAdjacentHTML('beforeend',
+                `<div id="modal-deploying-to-light-rain" class="modal-overlay">
+  <div class="modal flex flex-column">
+    <header class="flex">
+        <h3 class="mb0 underline">Lichteffekt wird übertragen</h3>
+        <button id="close-modal" class="btn ml-auto">X</button>
+    </header>
+    <p>Super! Du hast einen neuen Lichteffekt für den Lichtregen erstellt.<br>Es kann etwas dauern bis dein Lichteffekt im Lichtregen auf der Bühne erscheint.</p>
+    <p>Danke für deinen Beitrag!</p>
+    <p class="actions flex justify-end">
+        <button onclick="document.getElementById('modal-deploying-to-light-rain')?.remove()" class="btn ml1">Schließen</button>
+    </p>
+  </div>
+</div>`)
+        setTimeout(() => {
+            document.getElementById('modal-deploying-to-light-rain')?.remove()
+        }, 12000)
+    }
+})()
